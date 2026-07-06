@@ -104,7 +104,22 @@ export default function App() {
   return (
     <div className="page">
       <header className="masthead">
-        <p className="masthead-eyebrow">Canada 🇨🇦 · Mexico 🇲🇽 · United States 🇺🇸 — Summer 2026</p>
+        <div className="score-bug" aria-live="polite">
+          <span className="score-bug-label">Matches</span>
+          <span className="score-bug-count">
+            {playedCount}
+            <em>/72</em>
+          </span>
+          <span className="score-bug-bar">
+            <span style={{ width: `${(playedCount / 72) * 100}%` }} />
+          </span>
+        </div>
+        <p className="masthead-eyebrow">
+          <span className="host host-can">🇨🇦 Canada</span>
+          <span className="host host-mex">🇲🇽 Mexico</span>
+          <span className="host host-usa">🇺🇸 United States</span>
+          <span className="host-season">Summer 2026</span>
+        </p>
         <h1>
           Group stage,
           <br />
@@ -121,9 +136,6 @@ export default function App() {
           <button className="btn btn-ghost" onClick={clearAll} disabled={playedCount === 0}>
             Clear all scores
           </button>
-          <span className="match-counter" aria-live="polite">
-            {playedCount}/72 matches played
-          </span>
         </div>
       </header>
 

@@ -1,6 +1,7 @@
 import type { TeamStanding, TiebreakerKind } from "@setecastronomy/wc26-standings-engine";
 import type { GroupWithFixtures } from "./api.js";
 import type { Scores } from "./App.js";
+import { useFlip } from "./useFlip.js";
 
 const TIEBREAK_SHORT: Record<TiebreakerKind, string> = {
   "head-to-head points": "H2H",
@@ -22,6 +23,7 @@ interface Props {
 
 export function GroupCard({ group, scores, standings, thirdInfo, onScore }: Props) {
   const teamById = new Map(group.teams.map((t) => [t.id, t]));
+  const flipRef = useFlip();
 
   const parse = (raw: string): number | "" => {
     if (raw === "") return "";
@@ -30,8 +32,10 @@ export function GroupCard({ group, scores, standings, thirdInfo, onScore }: Prop
   };
 
   const rowClass = (s: TeamStanding): string => {
-    if (s.position <= 2) return "row-through";
-    if (s.position === 3 && thirdInfo?.qualifies && s.played > 0) return "row-third-in";
+    if (s.played === 0) return "";
+    if (s.position === 1) return "row-first";
+    if (s.position === 2) return "row-through";
+    if (s.position === 3 && thirdInfo?.qualifies) return "row-third-in";
     return "";
   };
 
@@ -92,7 +96,7 @@ export function GroupCard({ group, scores, standings, thirdInfo, onScore }: Prop
           </thead>
           <tbody>
             {standings.map((s) => (
-              <tr key={s.team.id} className={rowClass(s)}>
+              <tr key={s.team.id} ref={flipRef(s.team.id)} className={rowClass(s)}>
                 <td className="col-pos">{s.position}</td>
                 <td className="col-team">
                   {s.team.flag} {s.team.id}
