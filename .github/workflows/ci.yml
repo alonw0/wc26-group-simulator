@@ -60,13 +60,12 @@ jobs:
           docker push "${FLY_REGISTRY_SUBDOMAIN}/docker/${IMAGE_NAME}:${{ github.sha }}"
           docker push "${FLY_REGISTRY_SUBDOMAIN}/docker/${IMAGE_NAME}:latest"
 
-      - name: Publish npm packages to Fly
+      # Libraries publish only when their content actually changed — a version
+      # is a signal to consumers, and identical bits under a new number is
+      # noise. The image (above) ships every merge; it's the app.
+      - name: Publish npm packages to Fly (if content changed)
         if: github.ref == 'refs/heads/main'
         run: |
-          npm version --no-git-tag-version "0.1.${RUN_VERSION}" \
-            -w @setecastronomy/wc26-standings-engine
-          npm publish -w @setecastronomy/wc26-standings-engine
+          ./scripts/publish-if-changed.sh @setecastronomy/wc26-standings-engine "0.1.${RUN_VERSION}"
           # data package: major = matchday (3 = group stage complete)
-          npm version --no-git-tag-version "3.0.${RUN_VERSION}" \
-            -w @setecastronomy/wc26-results
-          npm publish -w @setecastronomy/wc26-results
+          ./scripts/publish-if-changed.sh @setecastronomy/wc26-results "3.0.${RUN_VERSION}"
