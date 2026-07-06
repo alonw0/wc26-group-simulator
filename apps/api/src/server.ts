@@ -1,4 +1,5 @@
 import fastifyStatic from "@fastify/static";
+import { REAL_RESULTS, REAL_RESULTS_META } from "@setecastronomy/wc26-results";
 import {
   computeGroupStandings,
   computeQualification,
@@ -30,6 +31,11 @@ app.get("/healthz", async () => ({
 
 app.get("/api/groups", async () => ({
   groups: GROUPS.map((g) => ({ ...g, fixtures: groupFixtures(g) })),
+}));
+
+app.get("/api/results", async () => ({
+  meta: REAL_RESULTS_META,
+  resultsByGroup: REAL_RESULTS,
 }));
 
 app.post<{ Body: SimulateBody }>("/api/simulate", async (req, reply) => {

@@ -51,9 +51,13 @@ jobs:
           docker push "${FLY_REGISTRY_SUBDOMAIN}/docker/${IMAGE_NAME}:${{ github.sha }}"
           docker push "${FLY_REGISTRY_SUBDOMAIN}/docker/${IMAGE_NAME}:latest"
 
-      - name: Publish npm package to Fly
+      - name: Publish npm packages to Fly
         if: github.ref == 'refs/heads/main'
         run: |
           npm version --no-git-tag-version "0.1.${{ github.run_number }}" \
             -w @setecastronomy/wc26-standings-engine
           npm publish -w @setecastronomy/wc26-standings-engine
+          # data package: major = matchday (3 = group stage complete)
+          npm version --no-git-tag-version "3.0.${{ github.run_number }}" \
+            -w @setecastronomy/wc26-results
+          npm publish -w @setecastronomy/wc26-results

@@ -5,6 +5,7 @@ WORKDIR /app
 # Install with only manifests first, so dependency layers cache across code changes
 COPY package.json package-lock.json ./
 COPY packages/standings-engine/package.json packages/standings-engine/
+COPY packages/results-2026/package.json packages/results-2026/
 COPY apps/api/package.json apps/api/
 COPY apps/web/package.json apps/web/
 RUN npm ci
@@ -21,11 +22,13 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 COPY packages/standings-engine/package.json packages/standings-engine/
+COPY packages/results-2026/package.json packages/results-2026/
 COPY apps/api/package.json apps/api/
 COPY apps/web/package.json apps/web/
 RUN npm ci --omit=dev && npm cache clean --force
 
 COPY --from=build /app/packages/standings-engine/dist packages/standings-engine/dist
+COPY --from=build /app/packages/results-2026/dist packages/results-2026/dist
 COPY --from=build /app/apps/api/dist apps/api/dist
 COPY --from=build /app/apps/web/dist apps/web/dist
 

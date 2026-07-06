@@ -21,6 +21,17 @@ export async function fetchGroups(): Promise<GroupWithFixtures[]> {
   return body.groups;
 }
 
+export interface RealResultsResponse {
+  meta: { matchday: number; complete: boolean; retrieved: string };
+  resultsByGroup: Record<string, MatchResult[]>;
+}
+
+export async function fetchRealResults(): Promise<RealResultsResponse> {
+  const res = await fetch("/api/results");
+  if (!res.ok) throw new Error(`Loading real results failed (${res.status})`);
+  return (await res.json()) as RealResultsResponse;
+}
+
 export async function simulate(
   resultsByGroup: Record<string, MatchResult[]>,
 ): Promise<SimulationResponse> {

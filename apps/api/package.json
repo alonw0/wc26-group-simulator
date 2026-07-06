@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@fastify/static": "^8.0.0",
+    "@setecastronomy/wc26-results": "*",
     "@setecastronomy/wc26-standings-engine": "*",
     "fastify": "^5.0.0"
   },

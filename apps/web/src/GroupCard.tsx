@@ -16,12 +16,14 @@ const TIEBREAK_SHORT: Record<TiebreakerKind, string> = {
 interface Props {
   group: GroupWithFixtures;
   scores: Scores[string];
+  /** The real tournament scores, present once "Load the real group stage" was used */
+  realScores?: Scores[string];
   standings?: TeamStanding[];
   thirdInfo?: { rank: number; qualifies: boolean };
   onScore: (groupId: string, key: string, side: "home" | "away", value: number | "") => void;
 }
 
-export function GroupCard({ group, scores, standings, thirdInfo, onScore }: Props) {
+export function GroupCard({ group, scores, realScores, standings, thirdInfo, onScore }: Props) {
   const teamById = new Map(group.teams.map((t) => [t.id, t]));
   const flipRef = useFlip();
 
@@ -47,10 +49,16 @@ export function GroupCard({ group, scores, standings, thirdInfo, onScore }: Prop
         {group.fixtures.map((f) => {
           const key = `${f.homeId}-${f.awayId}`;
           const s = scores[key] ?? { home: "", away: "" };
+          const real = realScores?.[key];
+          const edited = real !== undefined && (s.home !== real.home || s.away !== real.away);
           const home = teamById.get(f.homeId)!;
           const away = teamById.get(f.awayId)!;
           return (
-            <li className="fixture" key={key}>
+            <li
+              className={`fixture${edited ? " fixture-edited" : ""}`}
+              key={key}
+              title={edited ? `Real result: ${real.home}–${real.away}` : undefined}
+            >
               <span className="fixture-team fixture-home">
                 {home.flag} <b>{home.id}</b>
               </span>

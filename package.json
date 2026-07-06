@@ -8,8 +8,8 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "npm run build -w @setecastronomy/wc26-standings-engine && npm run build -w @wc26/api && npm run build -w @wc26/web",
-    "test": "npm run test -w @setecastronomy/wc26-standings-engine",
+    "build": "npm run build -w @setecastronomy/wc26-standings-engine && npm run build -w @setecastronomy/wc26-results && npm run build -w @wc26/api && npm run build -w @wc26/web",
+    "test": "npm run test -w @setecastronomy/wc26-standings-engine && npm run test -w @setecastronomy/wc26-results",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "dev:api": "npm run dev -w @wc26/api",
     "dev:web": "npm run dev -w @wc26/web"

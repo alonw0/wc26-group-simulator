@@ -358,6 +358,18 @@ input {
   margin: 0;
 }
 
+/* fixture edited away from the real result — you changed history here */
+.fixture-edited .score-input {
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.5),
+    0 0 0 2px var(--gold);
+}
+
+.fixture-edited .fixture-dash {
+  color: var(--gold);
+  font-weight: 700;
+}
+
 /* ── Standings tables ─────────────────────────────────── */
 
 table {

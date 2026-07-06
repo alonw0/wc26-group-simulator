@@ -9,14 +9,20 @@ That rule change is also this repo's demo scenario: the [`demo/2022-rules`](http
 ## What's inside
 
 ```
-packages/standings-engine   @setecastronomy/wc26-standings-engine — the npm package
+packages/standings-engine   @setecastronomy/wc26-standings-engine — the rules as code.
                             Official 2026 tiebreakers (head-to-head first, recursively
                             re-applied), third-place ranking, round-of-32 qualification.
                             Zero dependencies, fully unit-tested.
-apps/api                    Fastify backend. Wraps the engine in a small REST API and
+packages/results-2026       @setecastronomy/wc26-results — the real tournament as data.
+                            All 72 actual group-stage results, published as a versioned
+                            package (major version = matchday; 3.x = groups complete).
+                            Its test suite feeds the real results through the engine and
+                            asserts the outputs match the real qualified 24.
+apps/api                    Fastify backend. Wraps both packages in a small REST API and
                             serves the web bundle in production.
-apps/web                    React + Vite frontend. Group cards, live standings,
-                            "The Cut" third-place race, round-of-32 grid.
+apps/web                    React + Vite frontend. Load the real group stage, then bend
+                            history — edited fixtures glow gold, standings re-rank live,
+                            "The Cut" shows who you just sent home.
 Dockerfile                  Multi-stage build → single ~177MB runtime image.
 ```
 
@@ -57,6 +63,7 @@ npm test
 | Route | What it does |
 |---|---|
 | `GET /api/groups` | The real December 2025 draw: 12 groups, 48 teams, fixtures |
+| `GET /api/results` | The real group-stage results (all 72), served from `@setecastronomy/wc26-results` |
 | `POST /api/simulate` | Body: `{ resultsByGroup }` → standings per group + full qualification picture |
 | `GET /healthz` | Liveness |
 
@@ -67,7 +74,7 @@ On every push to `main`, GitHub Actions:
 1. **Authenticates to JFrog Fly with OIDC** — `jfrog/fly-action@v1` exchanges the workflow's GitHub identity token for a Fly access token and auto-configures npm and Docker for the Fly registry. No long-lived secrets stored in the repo.
 2. **Builds and tests** — TypeScript build of all three workspaces plus the vitest suite (the same tests also run inside the Docker build, so an image can't ship untested code).
 3. **Pushes the Docker image** to the Fly container registry, tagged with the version and commit SHA.
-4. **Publishes the npm package** — `@setecastronomy/wc26-standings-engine` goes to the Fly npm registry, versioned per run.
+4. **Publishes both npm packages** — the engine (`0.1.<run>`) and the results data package (`3.0.<run>` — major version tracks the matchday) go to the Fly npm registry. Data ships as releases too: during the group stage this package would have been republished after every matchday, each one traceable.
 
 Pull requests run build + tests only; artifacts are published from `main`.
 

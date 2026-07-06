@@ -2,6 +2,7 @@ import type { MatchResult } from "@setecastronomy/wc26-standings-engine";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   fetchGroups,
+  fetchRealResults,
   simulate,
   type GroupWithFixtures,
   type SimulationResponse,
@@ -18,6 +19,7 @@ const RANDOM_GOALS = [0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 3, 3, 4]; // roughly real sc
 export default function App() {
   const [groups, setGroups] = useState<GroupWithFixtures[]>([]);
   const [scores, setScores] = useState<Scores>({});
+  const [real, setReal] = useState<Scores | null>(null);
   const [sim, setSim] = useState<SimulationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
@@ -70,6 +72,32 @@ export default function App() {
     [],
   );
 
+  const loadReal = useCallback(async () => {
+    try {
+      const { resultsByGroup } = await fetchRealResults();
+      const next: Scores = {};
+      for (const g of groups) {
+        next[g.id] = {};
+        for (const r of resultsByGroup[g.id] ?? []) {
+          // match the fixture's home/away orientation; swap goals if reversed
+          const asPlayed = g.fixtures.some(
+            (f) => f.homeId === r.homeId && f.awayId === r.awayId,
+          );
+          if (asPlayed) {
+            next[g.id][`${r.homeId}-${r.awayId}`] = { home: r.homeGoals, away: r.awayGoals };
+          } else {
+            next[g.id][`${r.awayId}-${r.homeId}`] = { home: r.awayGoals, away: r.homeGoals };
+          }
+        }
+      }
+      setScores(next);
+      setReal(next);
+      setError(null);
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }, [groups]);
+
   const fillRandom = useCallback(() => {
     setScores((prev) => {
       const next: Scores = { ...prev };
@@ -89,7 +117,10 @@ export default function App() {
     });
   }, [groups]);
 
-  const clearAll = useCallback(() => setScores({}), []);
+  const clearAll = useCallback(() => {
+    setScores({});
+    setReal(null);
+  }, []);
 
   const playedCount = Object.values(resultsByGroup).reduce((n, r) => n + r.length, 0);
 
@@ -126,11 +157,14 @@ export default function App() {
           <span className="masthead-accent">your scores.</span>
         </h1>
         <p className="masthead-sub">
-          48 teams, 12 groups, 72 matches. Type any scoreline and watch the official 2026
-          tiebreakers — head-to-head first — reorder every table, live.
+          48 teams, 12 groups, 72 matches. Load the real group stage, then bend history — every
+          edit re-runs the official 2026 tiebreakers, head-to-head first, live.
         </p>
         <div className="masthead-actions">
-          <button className="btn btn-primary" onClick={fillRandom}>
+          <button className="btn btn-primary" onClick={loadReal}>
+            Load the real group stage
+          </button>
+          <button className="btn btn-ghost" onClick={fillRandom}>
             Fill remaining at random
           </button>
           <button className="btn btn-ghost" onClick={clearAll} disabled={playedCount === 0}>
@@ -148,6 +182,7 @@ export default function App() {
               key={g.id}
               group={g}
               scores={scores[g.id] ?? {}}
+              realScores={real?.[g.id]}
               standings={sim?.standingsByGroup[g.id]}
               thirdInfo={thirdsByGroup[g.id]}
               onScore={setScore}
