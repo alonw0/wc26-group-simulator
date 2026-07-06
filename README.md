@@ -1,8 +1,8 @@
 # ⚽ WC26 Group Stage Simulator
 
-**Pick every score of the 2026 World Cup group stage and watch the official tiebreakers reorder the tables live** — including the rule most fans don't know yet: in 2026, head-to-head results now beat overall goal difference, and 8 of the 12 third-placed teams survive "The Cut" into a round of 32.
+**Pick every score of the 2026 World Cup group stage and watch the official tiebreakers reorder the tables live.** Here's the rule most fans — and most codebases — would get wrong: in 2026, head-to-head results now beat overall goal difference, and 8 of the 12 third-placed teams survive "The Cut" into a round of 32.
 
-Built as a real-world demo of shipping artifacts with **[JFrog Fly](https://jfrog.com/fly/)**: every push to `main` builds the app, runs the tests, pushes the Docker image to the Fly container registry, and publishes the standings engine as an npm package to the Fly npm registry.
+That rule change is also this repo's demo scenario: the [`demo/2022-rules`](https://github.com/alonw0/wc26-group-simulator/tree/demo/2022-rules) branch preserves the bug (old tiebreaker order — the wrong team advances, three tests go red), and `main` holds the four-line fix. What stands between them is the interesting part: a **[JFrog Fly](https://jfrog.com/fly/)** pipeline where every push builds, tests, and produces *one release* containing both the Docker image and the standings engine as an npm package — versioned together, no stored secrets, no release ritual. The fix ships because someone merged it.
 
 ![CI](https://github.com/alonw0/wc26-group-simulator/actions/workflows/ci.yml/badge.svg)
 
