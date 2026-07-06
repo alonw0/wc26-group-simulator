@@ -1,8 +1,8 @@
 # ⚽ WC26 Group Stage Simulator
 
-**Pick every score of the 2026 World Cup group stage and watch the official tiebreakers reorder the tables live.** Here's the rule most fans — and most codebases — would get wrong: in 2026, head-to-head results now beat overall goal difference, and 8 of the 12 third-placed teams survive "The Cut" into a round of 32.
+**Load the real 2026 group stage — all 72 actual results — then bend history.** Iran went home unbeaten this summer; Senegal advanced after losing twice. That's the new third-place math: 12 third-placed teams, 8 survive "The Cut," and when teams finish level, head-to-head now beats overall goal difference — a 2026 rule change most codebases would get wrong.
 
-That rule change is also this repo's demo scenario: the [`demo/2022-rules`](https://github.com/alonw0/wc26-group-simulator/tree/demo/2022-rules) branch preserves the bug (old tiebreaker order — the wrong team advances, three tests go red), and `main` holds the four-line fix. What stands between them is the interesting part: a **[JFrog Fly](https://jfrog.com/fly/)** pipeline where every push builds, tests, and produces *one release* containing both the Docker image and the standings engine as an npm package — versioned together, no stored secrets, no release ritual. The fix ships because someone merged it.
+This repo keeps that bug on purpose: the [`demo/2022-rules`](https://github.com/alonw0/wc26-group-simulator/tree/demo/2022-rules) branch ranks by the old rules — and produces *identical* output on the real results. The broken code path simply never ran this summer; one different scoreline exposes it (three tests already know), and `main` holds the four-line fix. What stands between them is the interesting part: a **[JFrog Fly](https://jfrog.com/fly/)** pipeline where every push builds, tests, and produces *one release* containing the Docker image, the standings engine (npm), and the real results as a versioned data package — versioned together, no stored secrets, no release ritual. The fix ships because someone merged it.
 
 ![CI](https://github.com/alonw0/wc26-group-simulator/actions/workflows/ci.yml/badge.svg)
 
