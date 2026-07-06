@@ -75,8 +75,9 @@ function rankTiedCluster(
   const tiedIds = new Set(tied.map((t) => t.id));
   const h2h = computeStats(tiedIds, results);
   const h2hKey = (t: Team): [number, number, number] => {
-    const s = h2h.get(t.id)!;
-    return [s.points, s.goalsFor - s.goalsAgainst, s.goalsFor];
+    const o = overall.get(t.id)!;
+    // 2022-style: overall goal difference and goals decide before head-to-head
+    return [o.goalsFor - o.goalsAgainst, o.goalsFor, h2h.get(t.id)!.points];
   };
 
   const sorted = [...tied].sort((a, b) => {
