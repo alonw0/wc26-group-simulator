@@ -1,0 +1,36 @@
+{
+  "name": "@setecastronomy/wc26-standings-engine",
+  "version": "0.1.0",
+  "description": "FIFA World Cup 2026 group-stage standings engine: official 2026 tiebreakers (head-to-head first), third-place ranking, and round-of-32 qualification",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "keywords": [
+    "world-cup",
+    "2026",
+    "football",
+    "soccer",
+    "standings",
+    "tiebreakers",
+    "fifa"
+  ],
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "vitest": "^2.1.0"
+  }
+}

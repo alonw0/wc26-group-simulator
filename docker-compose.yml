@@ -1,0 +1,7 @@
+services:
+  app:
+    build: .
+    image: wc26-group-simulator:local
+    ports:
+      - "3000:3000"
+    restart: unless-stopped

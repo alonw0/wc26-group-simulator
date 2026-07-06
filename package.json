@@ -1,0 +1,20 @@
+{
+  "name": "wc26-group-simulator",
+  "private": true,
+  "version": "0.0.0",
+  "description": "World Cup 2026 group-stage simulator — monorepo demo for JFrog Fly",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @setecastronomy/wc26-standings-engine && npm run build -w @wc26/api && npm run build -w @wc26/web",
+    "test": "npm run test -w @setecastronomy/wc26-standings-engine",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "dev:api": "npm run dev -w @wc26/api",
+    "dev:web": "npm run dev -w @wc26/web"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
