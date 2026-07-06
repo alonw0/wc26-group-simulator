@@ -95,6 +95,17 @@ npm install @setecastronomy/wc26-standings-engine
 
 A note on the lockfile: `package-lock.json` is resolved against the public npm registry so anyone can clone and build this repo without Fly credentials. In CI, `fly-action` points npm at the Fly registry and npm transparently substitutes the registry host — dependencies are proxied (and cached) through Fly without rewriting the lockfile.
 
+## Pipeline design choices
+
+The choices below are deliberate — this section exists because "the pipeline works" and "the flow makes sense" are different claims.
+
+- **Release on every merge to `main`, docs included.** Three of this repo's releases are README-only changes, and that's a choice: with releasing this cheap (no ritual, auto-titled, auto-grouped), the release *history* becomes the filter, not the pipeline. The alternative — path filters or tag-triggered releases — trades away "every commit on main is shipped and traceable." For a library with external consumers I'd flip to tags; for a continuously-delivered app, every-merge wins.
+- **`0.1.<run>` versioning instead of semver.** Versions here encode *traceability*, not compatibility: any artifact version maps 1:1 to the CI run that produced it, and the image + both packages always share a run. Semver earns its keep when strangers depend on your public API; until then, run-linked versions answer the question teams actually ask ("what produced this?"). Re-runs of a failed workflow get a `-rerun.N` suffix so a retry can never collide with an already-published immutable version.
+- **PRs build and test; only `main` publishes.** The boring, correct gate. Artifacts from unreviewed code never reach the registry.
+- **Tests run twice — on the runner and inside the Docker build.** The second run means an image *cannot exist* with failing tests, even if someone builds it outside CI.
+- **Single-arch image (`linux/amd64`).** A demo-scope tradeoff, made knowingly: multi-arch via `buildx` is one step more and ~2× the build time; it's the first thing to add if anyone runs this on ARM in production (on an Apple Silicon laptop it runs under emulation).
+- **Serialized publishes, cancelable PR runs.** A `concurrency` group keeps racing merges from interleaving pushes, while stale PR runs cancel to save minutes.
+
 ## The 2026 rules, since you'll ask
 
 When teams finish level on points, 2026 breaks ties **head-to-head first** (points, then goal difference, then goals scored, among the tied teams only — re-applied recursively to any subset still tied), and only then overall goal difference, overall goals, team conduct score, and FIFA ranking. This is a change from 2022, which used overall goal difference first. The third-place table (points → GD → goals → conduct → FIFA ranking) decides which 8 of the 12 third-placed teams advance.

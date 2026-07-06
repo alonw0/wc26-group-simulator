@@ -9,8 +9,16 @@ permissions:
   contents: read
   id-token: write
 
+# Serialize runs on main (each merge publishes, in order); cancel stale PR runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
 env:
   IMAGE_NAME: wc26-group-simulator
+  # Re-runs get a distinct suffix so a retried job can't collide with an
+  # already-published version (npm versions are immutable)
+  RUN_VERSION: ${{ github.run_number }}${{ github.run_attempt != '1' && format('-rerun.{0}', github.run_attempt) || '' }}
 
 jobs:
   build-test-publish:
@@ -21,6 +29,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: npm
 
       # Exchanges the workflow's OIDC token for a Fly access token and
       # configures npm + Docker to resolve and publish through the Fly registry.
@@ -39,7 +48,7 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
-            -t "${FLY_REGISTRY_SUBDOMAIN}/docker/${IMAGE_NAME}:0.1.${{ github.run_number }}" \
+            -t "${FLY_REGISTRY_SUBDOMAIN}/docker/${IMAGE_NAME}:0.1.${RUN_VERSION}" \
             -t "${FLY_REGISTRY_SUBDOMAIN}/docker/${IMAGE_NAME}:${{ github.sha }}" \
             -t "${FLY_REGISTRY_SUBDOMAIN}/docker/${IMAGE_NAME}:latest" \
             .
@@ -47,17 +56,17 @@ jobs:
       - name: Push Docker image to Fly
         if: github.ref == 'refs/heads/main'
         run: |
-          docker push "${FLY_REGISTRY_SUBDOMAIN}/docker/${IMAGE_NAME}:0.1.${{ github.run_number }}"
+          docker push "${FLY_REGISTRY_SUBDOMAIN}/docker/${IMAGE_NAME}:0.1.${RUN_VERSION}"
           docker push "${FLY_REGISTRY_SUBDOMAIN}/docker/${IMAGE_NAME}:${{ github.sha }}"
           docker push "${FLY_REGISTRY_SUBDOMAIN}/docker/${IMAGE_NAME}:latest"
 
       - name: Publish npm packages to Fly
         if: github.ref == 'refs/heads/main'
         run: |
-          npm version --no-git-tag-version "0.1.${{ github.run_number }}" \
+          npm version --no-git-tag-version "0.1.${RUN_VERSION}" \
             -w @setecastronomy/wc26-standings-engine
           npm publish -w @setecastronomy/wc26-standings-engine
           # data package: major = matchday (3 = group stage complete)
-          npm version --no-git-tag-version "3.0.${{ github.run_number }}" \
+          npm version --no-git-tag-version "3.0.${RUN_VERSION}" \
             -w @setecastronomy/wc26-results
           npm publish -w @setecastronomy/wc26-results
