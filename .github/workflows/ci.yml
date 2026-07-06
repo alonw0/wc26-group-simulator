@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  IMAGE_NAME: wc26-group-simulator
+
+jobs:
+  build-test-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # Exchanges the workflow's OIDC token for a Fly access token and
+      # configures npm + Docker to resolve and publish through the Fly registry.
+      - name: Setup JFrog Fly
+        uses: jfrog/fly-action@v1
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck and build
+        run: npm run build
+
+      - name: Test
+        run: npm test
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t "${FLY_REGISTRY_SUBDOMAIN}/docker/${IMAGE_NAME}:0.1.${{ github.run_number }}" \
+            -t "${FLY_REGISTRY_SUBDOMAIN}/docker/${IMAGE_NAME}:${{ github.sha }}" \
+            -t "${FLY_REGISTRY_SUBDOMAIN}/docker/${IMAGE_NAME}:latest" \
+            .
+
+      - name: Push Docker image to Fly
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker push "${FLY_REGISTRY_SUBDOMAIN}/docker/${IMAGE_NAME}:0.1.${{ github.run_number }}"
+          docker push "${FLY_REGISTRY_SUBDOMAIN}/docker/${IMAGE_NAME}:${{ github.sha }}"
+          docker push "${FLY_REGISTRY_SUBDOMAIN}/docker/${IMAGE_NAME}:latest"
+
+      - name: Publish npm package to Fly
+        if: github.ref == 'refs/heads/main'
+        run: |
+          npm version --no-git-tag-version "0.1.${{ github.run_number }}" \
+            -w @setecastronomy/wc26-standings-engine
+          npm publish -w @setecastronomy/wc26-standings-engine

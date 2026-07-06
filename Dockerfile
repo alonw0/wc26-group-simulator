@@ -1,5 +1,5 @@
 # ── Build stage: compile the engine, API, and web bundle ─────────────
-FROM node:22-alpine AS build
+FROM setecastronomy.jfrog.io/docker/node:22-alpine AS build
 WORKDIR /app
 
 # Install with only manifests first, so dependency layers cache across code changes
@@ -15,7 +15,7 @@ COPY apps ./apps
 RUN npm run build && npm test
 
 # ── Runtime stage: API + static web bundle, production deps only ─────
-FROM node:22-alpine AS runtime
+FROM setecastronomy.jfrog.io/docker/node:22-alpine AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 
