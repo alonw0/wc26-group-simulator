@@ -71,6 +71,21 @@ On every push to `main`, GitHub Actions:
 
 Pull requests run build + tests only; artifacts are published from `main`.
 
+Fly ties both artifacts to the CI run as one **release** — image and package are versioned together (`0.1.<run>`), so "what shipped" is a single answer, not two registries to cross-reference.
+
+## Consume the artifacts from Fly
+
+With access to the `setecastronomy` Fly tenant (JFrog Fly Desktop handles auth):
+
+```bash
+# The image CI built (note: built on ubuntu runners → linux/amd64)
+docker pull setecastronomy.jfrog.io/docker/wc26-group-simulator:latest
+docker run --rm -p 3000:3000 setecastronomy.jfrog.io/docker/wc26-group-simulator:latest
+
+# The engine, in your own project
+npm install @setecastronomy/wc26-standings-engine
+```
+
 A note on the lockfile: `package-lock.json` is resolved against the public npm registry so anyone can clone and build this repo without Fly credentials. In CI, `fly-action` points npm at the Fly registry and npm transparently substitutes the registry host — dependencies are proxied (and cached) through Fly without rewriting the lockfile.
 
 ## The 2026 rules, since you'll ask
